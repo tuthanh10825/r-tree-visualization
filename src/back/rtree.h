@@ -22,7 +22,7 @@ public:
 		bool is_leaf = false;
 	} *root = 0;
 	rtree(int _M) : M(_M) {}
-
+	virtual ~rtree() { clear(); }
 	void clear()
 	{
 		clear(this->root); 
@@ -92,8 +92,8 @@ private:
 	void clear(TreeNode* &curr)
 	{
 		if (!curr) return; 
-		for (const TreeNode* child : curr->children)
-			clear(curr); 
+		for (TreeNode* child : curr->children)
+			clear(child); 
 		delete curr; curr = 0; 
 		return; 
 		
@@ -324,7 +324,7 @@ private:
 		return std::max(std::max(rect1[0].m_x, rect2[0].m_x) - std::min(rect1[2].m_x, rect2[2].m_x), 0.0) *
 			std::max(std::max(rect1[0].m_y, rect2[0].m_y) - std::min(rect1[2].m_y, rect2[2].m_y), 0.0);
 	}
-	bool dead_space_area(rectangle& r1, rectangle& r2)
+	double dead_space_area(rectangle& r1, rectangle& r2)
 	{
 		double left = std::min({ r1[0].m_x, r1[2].m_x, r2[0].m_x, r2[2].m_x });
 		double right = std::max({ r1[0].m_x, r1[2].m_x, r2[0].m_x, r2[2].m_x });
