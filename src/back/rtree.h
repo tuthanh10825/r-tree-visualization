@@ -11,7 +11,7 @@ class rtree
 {
 public:
 	int M;
-
+	int height = 0;
 	struct TreeNode
 	{
 		std::vector<std::vector<wxPoint2DDouble>> children_obj;
@@ -25,10 +25,11 @@ public:
 	virtual ~rtree() { clear(); }
 	void clear()
 	{
-		clear(this->root); 
+		clear(this->root);
 	}
 	std::vector<std::vector<wxPoint2DDouble>> search(std::vector<wxPoint2DDouble> bounding_rec) //find oid that intersect the bounding rectangle. 
 	{
+		if (!root) return {};
 		std::vector<std::vector<wxPoint2DDouble>> ans;
 		search(root, bounding_rec, ans);
 		return ans;
@@ -38,13 +39,13 @@ public:
 		std::vector<wxPoint2DDouble> new_mbr = find_mbr(object);
 		if (!root)
 		{
-			
-			root = new TreeNode();
+
+			root = new TreeNode(); height = 1; 
 			root->children_obj.push_back(object);
 			root->children_mbrs.push_back(new_mbr);
 			root->children.push_back(0);
 			root->is_leaf = true;
-			return; 
+			return;
 		}
 
 		std::stack<TreeNode*> search_path; search_path.push(0);
@@ -78,8 +79,8 @@ public:
 			TreeNode* top = search_path.top(); search_path.pop();
 			TreeNode* parent_top = search_path.empty() ? 0 : search_path.top();
 			if (top->children_obj.size() == M + 1)
-			{				
- 				split(top, parent_top); // split top, with parent_top to easier handling. 
+			{
+				split(top, parent_top); // split top, with parent_top to easier handling. 
 			}
 			else
 			{
@@ -87,7 +88,7 @@ public:
 			}
 		}
 	}
-
+	
 private:
 	void clear(TreeNode* &curr)
 	{
@@ -109,7 +110,7 @@ private:
 	{
 		for (const auto& point : obj)
 		{
-			if (point.m_x >= rect[0].m_x && point.m_x <= rect[1].m_x && point.m_y <= rect[1].m_y && point.m_y >= rect[2].m_y)
+			if (point.m_x >= rect[0].m_x && point.m_x <= rect[2].m_x && point.m_y <= rect[2].m_y && point.m_y >= rect[0].m_y)
 				return true;
 		}
 		return false;
@@ -143,7 +144,7 @@ private:
 	{
 		if (parent == 0)
 		{
-
+			++height; 
 			parent = new TreeNode();
 			parent->children.push_back(curr);
 			parent->children_obj.push_back({});
@@ -181,7 +182,7 @@ private:
 		TreeNode* new_node1 = new TreeNode();
 		TreeNode* new_node2 = new TreeNode();
 		int entries_left = M - 1;
-		for (int i = 0; i < children_mbrs.size(); ++i)
+ 		for (int i = 0; i < children_mbrs.size(); ++i)
 		{
 			if (children_mbrs[i] == e1)
 			{

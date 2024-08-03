@@ -4,6 +4,7 @@
 #include <wx/graphics.h>
 #include <wx/dcbuffer.h>
 #include "rtree.h"
+#include <set>
 class drawing_canvas : public wxWindow
 {
 public: 
@@ -28,7 +29,7 @@ public:
 	std::vector<std::vector<wxPoint2DDouble>> mbrs; 
 
 	std::vector<wxPoint2DDouble> choosing_rect; 
-
+	vector<vector<wxPoint2DDouble>> choosing_obj; 
 	bool is_drawing = false; 
 	bool is_choosing = false;
 

@@ -60,6 +60,7 @@ void main_frame::on_stop_choose(wxCommandEvent&)
 	canvas->Bind(wxEVT_LEAVE_WINDOW, &drawing_canvas::on_mouse_leave, canvas);
 
 	canvas->choosing_rect.clear();
+	canvas->choosing_obj.clear();
 	canvas->Refresh(); 
 
 	range_find->Bind(wxEVT_BUTTON, &main_frame::on_choose, this);
