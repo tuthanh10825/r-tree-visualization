@@ -106,7 +106,7 @@ public:
 		objs.erase(objs.begin() + index); 
 		leaf->children.pop_back(); 
 		condense_tree(leaf);
-		if (root->children.size() == 1)
+		if (root->children.size() == 1 && !root -> is_leaf)
 		{
 			--height; 
 			TreeNode* temp = root; 
@@ -115,18 +115,25 @@ public:
 			delete temp; 
 			return; 
 		}
+		if (root->children.size() == 0)
+		{
+			height = 0; 
+			delete root;
+			root = 0;
+		}
 		return; 
 	}
 private:
-	void condense_tree(TreeNode *& leaf)
+	void condense_tree(TreeNode *leaf)
 	{
+		
 		TreeNode* curr = leaf; 
 		vector<TreeNode*> false_delete; 
 		while (curr != root)
 		{
 			TreeNode* parent = curr->parent; 
 			int index = 0; 
-			for (; index <= parent->children.size(); ++index)
+			for (; index < parent->children.size(); ++index)
 			{
 				if (parent->children[index] == curr) break; 
 			}
@@ -135,7 +142,7 @@ private:
 			{
 				parent->children.erase(parent -> children.begin() + index); 
 				parent->children_mbrs.erase(parent->children_mbrs.begin() + index); 
-				parent->children_obj.pop_back(); 
+				parent->children_obj.erase(parent -> children_obj.begin() + index); 
 				false_delete.push_back(curr); 
 			}
 			else
@@ -194,6 +201,8 @@ private:
 		search_path.top()->children.push_back(reinsert);
 		search_path.top()->children_obj.push_back({});
 		search_path.top()->children_mbrs.push_back(curr_mbr);
+		reinsert->parent = search_path.top();
+		search_path.push(reinsert); 
 		while (search_path.size() > 1)
 		{
 
@@ -301,6 +310,7 @@ private:
 			parent->children.push_back(curr);
 			parent->children_obj.push_back({});
 			parent->children_mbrs.push_back({});
+			curr->parent = parent; 
 			fix_mbr(parent, curr);
 		}
 		vector<TreeNode*> children = parent->children;
@@ -341,6 +351,7 @@ private:
 				new_node1->children_mbrs.push_back(children_mbrs[i]);
 				new_node1->children_obj.push_back(children_obj[i]);
 				new_node1->children.push_back(children[i]);
+				if (children[i]) children[i]->parent = new_node1; 
 				continue; 
 			}
 			else if (children_mbrs[i] == e2)
@@ -348,15 +359,17 @@ private:
 				new_node2->children.push_back(children[i]);
 				new_node2->children_obj.push_back(children_obj[i]);
 				new_node2->children_mbrs.push_back(children_mbrs[i]);
+				if (children[i]) children[i]->parent = new_node2;
 				continue; 
 			}
-			--entries_left;
+			
 			if (area_extending_cost(new_mbr1, children_mbrs[i]) < area_extending_cost(new_mbr2, children_mbrs[i])
-				|| new_node1->children.size() == M - entries_left)
+				|| new_node1->children.size() == M/2 - entries_left)
 			{
 				new_node1->children_mbrs.push_back(children_mbrs[i]);
 				new_node1->children_obj.push_back(children_obj[i]);
 				new_node1->children.push_back(children[i]);
+				if (children[i]) children[i]->parent = new_node1;
 
 				new_mbr1[4].m_x = new_mbr1[0].m_x = new_mbr1[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr1[0].m_x);
 				new_mbr1[4].m_y = new_mbr1[0].m_y = new_mbr1[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr1[0].m_y);
@@ -366,11 +379,12 @@ private:
 
 			}
 			else if (area_extending_cost(new_mbr1, children_mbrs[i]) > area_extending_cost(new_mbr2, children_mbrs[i])
-				|| new_node2->children.size() == M - entries_left)
+				|| new_node2->children.size() == M/2 - entries_left)
 			{
 				new_node2->children.push_back(children[i]);
 				new_node2->children_obj.push_back(children_obj[i]);
 				new_node2->children_mbrs.push_back(children_mbrs[i]);
+				if (children[i]) children[i]->parent = new_node2;
 
 				new_mbr2[4].m_x = new_mbr2[0].m_x = new_mbr2[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr2[0].m_x);
 				new_mbr2[4].m_y = new_mbr2[0].m_y = new_mbr2[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr2[0].m_y);
@@ -405,9 +419,11 @@ private:
 					new_mbr2[3].m_y = new_mbr2[2].m_y = std::max(children_mbrs[i][2].m_y, new_mbr2[2].m_y);
 				}
 			}
+			--entries_left;
 		}
 		new_node1->is_leaf = new_node2->is_leaf = curr->is_leaf;
-		new_node1->parent = new_node2->parent = parent; 
+		new_node1->parent = parent; 
+		new_node2->parent = parent; 
 
 		parent->children[index] = new_node1;
 		parent->children_mbrs[index] = new_mbr1;
