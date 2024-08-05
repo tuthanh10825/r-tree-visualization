@@ -35,6 +35,7 @@ public:
 
 	
 	void clear();
+	void remove_choosing_obj();
 public: 
 	void draw_tree(rtree::TreeNode* curr, wxGraphicsContext* gc, wxPen pen, int level = 0);
 

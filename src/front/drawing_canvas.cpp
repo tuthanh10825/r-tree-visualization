@@ -98,6 +98,18 @@ void drawing_canvas::clear()
 	this->Refresh();
 }
 
+void drawing_canvas::remove_choosing_obj()
+{
+	for (const auto& obj : this->choosing_obj)
+	{
+		tree.remove(obj); 
+	}
+	this->choosing_obj.clear();
+	this->choosing_rect.clear();
+	this->Refresh();
+	
+}
+
 
 void drawing_canvas::choosing_rect_down(wxMouseEvent& evt)
 {

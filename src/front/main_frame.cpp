@@ -10,12 +10,15 @@ main_frame::main_frame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title
 	
 	range_find = new wxButton(setting_panel, wxID_ANY, "Choose");
 	range_find->Bind(wxEVT_BUTTON, &main_frame::on_choose, this); 
+
+	remove = new wxButton(setting_panel, wxID_ANY, "Remove"); 
+	remove->Bind(wxEVT_BUTTON, &main_frame::on_remove, this);
 	wxBoxSizer* setting_panel_sizer = new wxBoxSizer(wxHORIZONTAL); 
 	
 
 	setting_panel_sizer->Add(clear_all, 0, wxALL, 5); 
 	setting_panel_sizer->Add(range_find, 0, wxALL, 5); 
-
+	setting_panel_sizer->Add(remove, 0, wxALL, 5); 
 	setting_panel->SetSizerAndFit(setting_panel_sizer); 
 	
 	wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL); 
@@ -65,3 +68,10 @@ void main_frame::on_stop_choose(wxCommandEvent&)
 
 	range_find->Bind(wxEVT_BUTTON, &main_frame::on_choose, this);
 }
+
+void main_frame::on_remove(wxCommandEvent&)
+{
+	this->canvas->remove_choosing_obj(); 
+}
+
+

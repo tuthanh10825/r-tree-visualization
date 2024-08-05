@@ -9,10 +9,12 @@ public:
 	wxButton* clear_all;
 	drawing_canvas* canvas;
 	wxButton* range_find; 
+	wxButton* remove; 
 private:
 	void on_clear_all(wxCommandEvent&);
 	void on_choose(wxCommandEvent&); 
 	void on_stop_choose(wxCommandEvent&); 
-
+	void on_remove(wxCommandEvent&); 
+	
 };
 #endif

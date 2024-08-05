@@ -14,6 +14,7 @@ public:
 	int height = 0;
 	struct TreeNode
 	{
+		TreeNode* parent = 0; 
 		std::vector<std::vector<wxPoint2DDouble>> children_obj;
 		std::vector<std::vector<wxPoint2DDouble>> children_mbrs;
 		std::vector<TreeNode*>children;
@@ -88,8 +89,154 @@ public:
 			}
 		}
 	}
+	void remove(const vector<wxPoint2DDouble>& remove_obj)
+	{
+		rectangle remove_mbr = find_mbr(remove_obj); 
+		TreeNode* leaf = find_leaf(root, remove_mbr, remove_obj); 
+		vector<rectangle>& mbrs = leaf->children_mbrs; 
+		vector<vector<wxPoint2DDouble>>& objs = leaf->children_obj; 
 	
+		int index = 0; 
+		for (; index < mbrs.size(); ++index)
+		{
+			if (mbrs[index] == remove_mbr && remove_obj == objs[index]) break; 
+		}
+		assert(index != mbrs.size()); 
+		mbrs.erase(mbrs.begin() + index); 
+		objs.erase(objs.begin() + index); 
+		leaf->children.pop_back(); 
+		condense_tree(leaf);
+		if (root->children.size() == 1)
+		{
+			--height; 
+			TreeNode* temp = root; 
+			root = root->children[0]; 
+			if (root) root->parent = 0; 
+			delete temp; 
+			return; 
+		}
+		return; 
+	}
 private:
+	void condense_tree(TreeNode *& leaf)
+	{
+		TreeNode* curr = leaf; 
+		vector<TreeNode*> false_delete; 
+		while (curr != root)
+		{
+			TreeNode* parent = curr->parent; 
+			int index = 0; 
+			for (; index <= parent->children.size(); ++index)
+			{
+				if (parent->children[index] == curr) break; 
+			}
+			assert(index != parent->children.size()); 
+			if (curr->children.size() < M / 2)
+			{
+				parent->children.erase(parent -> children.begin() + index); 
+				parent->children_mbrs.erase(parent->children_mbrs.begin() + index); 
+				parent->children_obj.pop_back(); 
+				false_delete.push_back(curr); 
+			}
+			else
+			{
+				fix_mbr(parent, curr); 
+			}
+			curr = parent; 
+		}
+		//reinsert all the entries of nodes that are in the set false_delete.
+		
+		int s = 0; 
+		for (TreeNode* reinsert : false_delete)
+		{
+			if (reinsert->is_leaf)
+			{
+				for (int i = 0; i < reinsert->children_obj.size(); ++i) insert(reinsert -> children_obj[i]);
+			}
+			else
+			{
+				for (int i = 0; i < reinsert->children_mbrs.size(); ++i)
+				{
+					insert_at_height(reinsert->children[i], this -> height - s, reinsert->children_mbrs[i]); 
+				}
+				
+			}
+			++s; 
+			delete reinsert; 
+		}
+		
+	}
+	void insert_at_height(TreeNode* reinsert, int h, rectangle curr_mbr)
+	{
+
+		TreeNode* curr = root; 
+		std::stack<TreeNode*> search_path; 
+		search_path.push(0); 
+		for (int i = 1; i < h; ++i)
+		{
+			const vector<vector<wxPoint2DDouble>>& mbrs = curr->children_mbrs;
+			int index = -1; double extended_requirement = DBL_MAX;
+			for (int i = 0; i < mbrs.size(); ++i)
+			{
+				if (area_extending_cost(mbrs[i], curr_mbr) < extended_requirement)
+				{
+					index = i;
+					extended_requirement = area_extending_cost(mbrs[i], curr_mbr);
+				}
+				else if (area_extending_cost(mbrs[i], curr_mbr) == extended_requirement)
+				{
+					if (area(mbrs[i]) < area(mbrs[index])) index = i;
+				}
+			}
+			search_path.push(curr);
+			curr = curr->children[index];
+		}
+		search_path.top()->children.push_back(reinsert);
+		search_path.top()->children_obj.push_back({});
+		search_path.top()->children_mbrs.push_back(curr_mbr);
+		while (search_path.size() > 1)
+		{
+
+			TreeNode* top = search_path.top(); search_path.pop();
+			TreeNode* parent_top = search_path.empty() ? 0 : search_path.top();
+			if (top->children_obj.size() == M + 1)
+			{
+				split(top, parent_top); // split top, with parent_top to easier handling. 
+			}
+			else
+			{
+				fix_mbr(parent_top, top); //fix the mbr of parent_top, with top is the mbr which has been changed when inserting new node.
+			}
+		}
+	}
+	TreeNode* find_leaf(TreeNode* root, const rectangle & obj_rect, const std::vector<wxPoint2DDouble>& obj)
+	{
+		if (!root) return 0; 
+		const std::vector<std::vector<wxPoint2DDouble>>& candidate = root->children_mbrs;
+		const std::vector<TreeNode*>& children = root->children;
+		const std::vector<std::vector<wxPoint2DDouble>>& object = root->children_obj;
+		if (!(root->is_leaf))
+		{
+			for (int i = 0; i < candidate.size(); ++i)
+			{
+				if (is_inside(obj_rect, candidate[i]))
+				{
+					TreeNode* ans = find_leaf(children[i], obj_rect, obj); 
+					if (ans != 0) return ans;
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < candidate.size(); ++i)
+			{
+				if (candidate[i] == obj_rect && obj == object[i])
+					return root; 
+			}
+		}
+		return 0; 
+	}
+	
 	void clear(TreeNode* &curr)
 	{
 		if (!curr) return; 
@@ -98,6 +245,11 @@ private:
 		delete curr; curr = 0; 
 		return; 
 		
+	}
+	inline bool is_inside(const rectangle& smaller, const rectangle& bigger)
+	{
+		return (smaller[0].m_x >= bigger[0].m_x) && (smaller[0].m_y >= bigger[0].m_y) 
+			&& (smaller[2].m_x <= bigger[2].m_x) && (smaller[2].m_y <= bigger[2].m_y);
 	}
 	bool is_overlap(const std::vector<wxPoint2DDouble>& rect1, const std::vector<wxPoint2DDouble>& rect2)
 	{
@@ -255,6 +407,8 @@ private:
 			}
 		}
 		new_node1->is_leaf = new_node2->is_leaf = curr->is_leaf;
+		new_node1->parent = new_node2->parent = parent; 
+
 		parent->children[index] = new_node1;
 		parent->children_mbrs[index] = new_mbr1;
 
