@@ -362,43 +362,14 @@ private:
 				if (children[i]) children[i]->parent = new_node2;
 				continue; 
 			}
-			
-			if (area_extending_cost(new_mbr1, children_mbrs[i]) < area_extending_cost(new_mbr2, children_mbrs[i])
-				|| new_node1->children.size() == M/2 - entries_left)
-			{
-				new_node1->children_mbrs.push_back(children_mbrs[i]);
-				new_node1->children_obj.push_back(children_obj[i]);
-				new_node1->children.push_back(children[i]);
-				if (children[i]) children[i]->parent = new_node1;
-
-				new_mbr1[4].m_x = new_mbr1[0].m_x = new_mbr1[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr1[0].m_x);
-				new_mbr1[4].m_y = new_mbr1[0].m_y = new_mbr1[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr1[0].m_y);
-
-				new_mbr1[1].m_x = new_mbr1[2].m_x = std::max(children_mbrs[i][2].m_x, new_mbr1[2].m_x);
-				new_mbr1[3].m_y = new_mbr1[2].m_y = std::max(children_mbrs[i][2].m_y, new_mbr1[2].m_y);
-
-			}
-			else if (area_extending_cost(new_mbr1, children_mbrs[i]) > area_extending_cost(new_mbr2, children_mbrs[i])
-				|| new_node2->children.size() == M/2 - entries_left)
-			{
-				new_node2->children.push_back(children[i]);
-				new_node2->children_obj.push_back(children_obj[i]);
-				new_node2->children_mbrs.push_back(children_mbrs[i]);
-				if (children[i]) children[i]->parent = new_node2;
-
-				new_mbr2[4].m_x = new_mbr2[0].m_x = new_mbr2[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr2[0].m_x);
-				new_mbr2[4].m_y = new_mbr2[0].m_y = new_mbr2[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr2[0].m_y);
-
-				new_mbr2[1].m_x = new_mbr2[2].m_x = std::max(children_mbrs[i][2].m_x, new_mbr2[2].m_x);
-				new_mbr2[3].m_y = new_mbr2[2].m_y = std::max(children_mbrs[i][2].m_y, new_mbr2[2].m_y);
-			}
 			else
 			{
-				if (area(new_mbr1) < area(new_mbr2))
+				if (new_node1->children.size() == M / 2 - entries_left)
 				{
 					new_node1->children_mbrs.push_back(children_mbrs[i]);
 					new_node1->children_obj.push_back(children_obj[i]);
 					new_node1->children.push_back(children[i]);
+					if (children[i]) children[i]->parent = new_node1;
 
 					new_mbr1[4].m_x = new_mbr1[0].m_x = new_mbr1[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr1[0].m_x);
 					new_mbr1[4].m_y = new_mbr1[0].m_y = new_mbr1[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr1[0].m_y);
@@ -406,11 +377,12 @@ private:
 					new_mbr1[1].m_x = new_mbr1[2].m_x = std::max(children_mbrs[i][2].m_x, new_mbr1[2].m_x);
 					new_mbr1[3].m_y = new_mbr1[2].m_y = std::max(children_mbrs[i][2].m_y, new_mbr1[2].m_y);
 				}
-				else
+				else if(new_node2->children.size() == M / 2 - entries_left)
 				{
 					new_node2->children.push_back(children[i]);
 					new_node2->children_obj.push_back(children_obj[i]);
 					new_node2->children_mbrs.push_back(children_mbrs[i]);
+					if (children[i]) children[i]->parent = new_node2;
 
 					new_mbr2[4].m_x = new_mbr2[0].m_x = new_mbr2[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr2[0].m_x);
 					new_mbr2[4].m_y = new_mbr2[0].m_y = new_mbr2[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr2[0].m_y);
@@ -418,8 +390,62 @@ private:
 					new_mbr2[1].m_x = new_mbr2[2].m_x = std::max(children_mbrs[i][2].m_x, new_mbr2[2].m_x);
 					new_mbr2[3].m_y = new_mbr2[2].m_y = std::max(children_mbrs[i][2].m_y, new_mbr2[2].m_y);
 				}
+				else if (area_extending_cost(new_mbr1, children_mbrs[i]) < area_extending_cost(new_mbr2, children_mbrs[i]))	
+				{
+					new_node1->children_mbrs.push_back(children_mbrs[i]);
+					new_node1->children_obj.push_back(children_obj[i]);
+					new_node1->children.push_back(children[i]);
+					if (children[i]) children[i]->parent = new_node1;
+
+					new_mbr1[4].m_x = new_mbr1[0].m_x = new_mbr1[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr1[0].m_x);
+					new_mbr1[4].m_y = new_mbr1[0].m_y = new_mbr1[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr1[0].m_y);
+
+					new_mbr1[1].m_x = new_mbr1[2].m_x = std::max(children_mbrs[i][2].m_x, new_mbr1[2].m_x);
+					new_mbr1[3].m_y = new_mbr1[2].m_y = std::max(children_mbrs[i][2].m_y, new_mbr1[2].m_y);
+
+				}
+				else if (area_extending_cost(new_mbr1, children_mbrs[i]) > area_extending_cost(new_mbr2, children_mbrs[i]))
+				{
+					new_node2->children.push_back(children[i]);
+					new_node2->children_obj.push_back(children_obj[i]);
+					new_node2->children_mbrs.push_back(children_mbrs[i]);
+					if (children[i]) children[i]->parent = new_node2;
+
+					new_mbr2[4].m_x = new_mbr2[0].m_x = new_mbr2[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr2[0].m_x);
+					new_mbr2[4].m_y = new_mbr2[0].m_y = new_mbr2[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr2[0].m_y);
+
+					new_mbr2[1].m_x = new_mbr2[2].m_x = std::max(children_mbrs[i][2].m_x, new_mbr2[2].m_x);
+					new_mbr2[3].m_y = new_mbr2[2].m_y = std::max(children_mbrs[i][2].m_y, new_mbr2[2].m_y);
+				}
+				else
+				{
+					if (area(new_mbr1) < area(new_mbr2))
+					{
+						new_node1->children_mbrs.push_back(children_mbrs[i]);
+						new_node1->children_obj.push_back(children_obj[i]);
+						new_node1->children.push_back(children[i]);
+
+						new_mbr1[4].m_x = new_mbr1[0].m_x = new_mbr1[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr1[0].m_x);
+						new_mbr1[4].m_y = new_mbr1[0].m_y = new_mbr1[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr1[0].m_y);
+
+						new_mbr1[1].m_x = new_mbr1[2].m_x = std::max(children_mbrs[i][2].m_x, new_mbr1[2].m_x);
+						new_mbr1[3].m_y = new_mbr1[2].m_y = std::max(children_mbrs[i][2].m_y, new_mbr1[2].m_y);
+					}
+					else
+					{
+						new_node2->children.push_back(children[i]);
+						new_node2->children_obj.push_back(children_obj[i]);
+						new_node2->children_mbrs.push_back(children_mbrs[i]);
+
+						new_mbr2[4].m_x = new_mbr2[0].m_x = new_mbr2[3].m_x = std::min(children_mbrs[i][0].m_x, new_mbr2[0].m_x);
+						new_mbr2[4].m_y = new_mbr2[0].m_y = new_mbr2[1].m_y = std::min(children_mbrs[i][0].m_y, new_mbr2[0].m_y);
+
+						new_mbr2[1].m_x = new_mbr2[2].m_x = std::max(children_mbrs[i][2].m_x, new_mbr2[2].m_x);
+						new_mbr2[3].m_y = new_mbr2[2].m_y = std::max(children_mbrs[i][2].m_y, new_mbr2[2].m_y);
+					}
+				}
+				--entries_left;
 			}
-			--entries_left;
 		}
 		new_node1->is_leaf = new_node2->is_leaf = curr->is_leaf;
 		new_node1->parent = parent; 
